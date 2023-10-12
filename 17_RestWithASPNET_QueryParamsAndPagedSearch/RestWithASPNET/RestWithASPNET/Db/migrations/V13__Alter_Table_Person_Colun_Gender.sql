@@ -1,0 +1,2 @@
+ALTER TABLE person
+	MODIFY COLUMN gender VARCHAR(100);
