@@ -1,0 +1,105 @@
+name: dockercompose17310396229188115006
+services:
+  db:
+    build:
+      context: C:\Users\VANDINETE\Desktop\RestWithAsp\RestWithAsp-NET6\19_RestWithASPNET_AsicionandoSuporteDocker\RestWithASPNET
+      dockerfile: db/Dockerfile
+    command:
+      - mysqld
+      - --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_DATABASE: rest_with_asp_net
+      MYSQL_PASSWORD: docker
+      MYSQL_ROOT_PASSWORD: docker
+      MYSQL_USER: docker
+      TZ: America/Sao_Paulo
+    image: rest-with-asp-net-db
+    networks:
+      udemy-network: null
+    ports:
+      - mode: ingress
+        target: 3306
+        published: "3308"
+        protocol: tcp
+    restart: always
+  rest-with-asp-net:
+    build:
+      context: C:\Users\VANDINETE\Desktop\RestWithAsp\RestWithAsp-NET6\19_RestWithASPNET_AsicionandoSuporteDocker\RestWithASPNET
+      dockerfile: RestWithASPNET/Dockerfile
+      labels:
+        com.microsoft.created-by: visual-studio
+        com.microsoft.visual-studio.project-name: RestWithASPNET
+      target: base
+    container_name: RestWithASPNET
+    depends_on:
+      db:
+        condition: service_started
+        required: true
+    entrypoint:
+      - tail
+      - -f
+      - /dev/null
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_LOGGING__CONSOLE__DISABLECOLORS: "true"
+      DOTNET_USE_POLLING_FILE_WATCHER: "1"
+      NUGET_FALLBACK_PACKAGES: /root/.nuget/fallbackpackages
+      TZ: America/Sao_Paulo
+    image: rest_with_asp_net:dev
+    labels:
+      com.microsoft.visualstudio.debuggee.arguments: ' --additionalProbingPath /root/.nuget/packages --additionalProbingPath /root/.nuget/fallbackpackages  "/app/bin/Debug/net6.0/RestWithASPNET.dll"'
+      com.microsoft.visualstudio.debuggee.killprogram: /bin/sh -c "if PID=$$(pidof dotnet); then kill $$PID; fi"
+      com.microsoft.visualstudio.debuggee.program: dotnet
+      com.microsoft.visualstudio.debuggee.workingdirectory: /app
+    networks:
+      udemy-network: null
+    ports:
+      - mode: ingress
+        target: 80
+        published: "7295"
+        protocol: tcp
+    tty: true
+    volumes:
+      - type: bind
+        source: C:\Users\VANDINETE\Desktop\RestWithAsp\RestWithAsp-NET6\19_RestWithASPNET_AsicionandoSuporteDocker\RestWithASPNET\RestWithASPNET
+        target: /app
+        bind:
+          create_host_path: true
+      - type: bind
+        source: C:\Users\VANDINETE\Desktop\RestWithAsp\RestWithAsp-NET6\19_RestWithASPNET_AsicionandoSuporteDocker\RestWithASPNET
+        target: /src
+        bind:
+          create_host_path: true
+      - type: bind
+        source: C:\Users\VANDINETE\vsdbg\vs2017u5
+        target: /remote_debugger
+        bind:
+          create_host_path: true
+      - type: bind
+        source: C:\Users\VANDINETE\.nuget\packages\
+        target: /root/.nuget/packages
+        read_only: true
+        bind:
+          create_host_path: true
+      - type: bind
+        source: C:\Program Files (x86)\Microsoft Visual Studio\Shared\NuGetPackages
+        target: /root/.nuget/fallbackpackages
+        read_only: true
+        bind:
+          create_host_path: true
+      - type: bind
+        source: C:\Users\VANDINETE\AppData\Roaming/ASP.NET/Https
+        target: /root/.aspnet/https
+        read_only: true
+        bind:
+          create_host_path: true
+      - type: bind
+        source: C:\Users\VANDINETE\AppData\Roaming/Microsoft/UserSecrets
+        target: /root/.microsoft/usersecrets
+        read_only: true
+        bind:
+          create_host_path: true
+networks:
+  udemy-network:
+    name: dockercompose17310396229188115006_udemy-network
+    driver: bridge
